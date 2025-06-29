@@ -1,0 +1,19 @@
+Package: trimsib
+Title: Survey Estimates of Wartime Mortality (King and Mukaigawara, 2025+)
+Version: 0.0.1
+Authors@R: 
+    person(given = "Mitsuru", family = "Mukaigawara", 
+           email = "mitsuru_mukaigawara@g.harvard.edu", 
+           role = c("cre", "aut"),
+           comment = c(ORCID = "0000-0001-6530-2083")),
+    person(given = "Gary", family = "King", 
+           email = "king@harvard.edu", 
+           role = c("aut"))
+Description: The package estimates wartime mortality based on survey data. See King and Mukaigawara (2025+).
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Depends: 
+    R (>= 3.5.0)
