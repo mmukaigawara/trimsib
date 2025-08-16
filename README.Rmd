@@ -21,8 +21,7 @@ knitr::opts_chunk$set(collapse = TRUE, fig.path = "man/figures/README-", comment
 ```
 
 
-This package implements the methodology outlined in [Survey Estimates of Wartime Mortality
-](https://gking.harvard.edu/sibs).
+This package implements the methodology outlined in [Survey Estimates of Wartime Mortality](https://gking.harvard.edu/sibs).
 
 ## Installation
 
@@ -43,6 +42,9 @@ The dataframe `dat` should contain the following variables:
 - `Dj`: the number of deaths (`Bj` - `Sj`)
 - `Mj`: sibship-level mortality (`Dj` / `Bj`)
 - `cluster`: cluster ID
+
+Please make sure to name the number of siblings, survivors, 
+and deaths as `Bj`, `Sj`, and `Dj` in your dataset.
 
 The first task is to construct weights (`Wj`), normalized weights (`Zj`), 
 and weighted mortality (`Zj`) as follows:
@@ -95,5 +97,27 @@ dat_tr <- get_trimmed_data(result_iraq, criteria = 6*10^-6,
                            trim_level = 0.2, vec_var = "Vj")
 ```
 
-The final output, `dat_tr`, contains data in which 20\% of observations 
+The output, `dat_tr`, contains data in which 20\% of observations 
 (total, from both tails) have been trimmed for clusters suspected of contamination.
+
+Finally, we can compute the G-K mortality estimates using the `get_mort` function.  
+For example, to compute the mortality rate of cluster 1,  
+we can use the following code.  
+The parameter `max_Sj` specifies the maximum value of `S_j` to include in the estimation  
+(see [Survey Estimates of Wartime Mortality](https://gking.harvard.edu/sibs) for details).
+
+```{r eval=FALSE}
+get_mort(dat_tr |> filter(cluster == 1), 
+         max_Sj = 15)
+```
+
+The output is a tibble containing the estimated mortality rate along with  
+the upper and lower bounds of the 95\% confidence interval.  
+In the following example, the mortality rate is 3.03\% with a 95\% CI of [2.09, 3.98\%].
+
+```{r, eval=FALSE}
+# A tibble: 1 × 4
+  `Mortality rate` `Lower 95%CI` `Upper 95%CI`  Variance
+             <dbl>         <dbl>         <dbl>     <dbl>
+1           0.0303        0.0209        0.0398 0.0000232
+```
