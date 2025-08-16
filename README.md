@@ -4,11 +4,11 @@
 # **trimsib**: Survey Estimates of Wartime Mortality
 
 This package implements the methodology outlined in [Survey Estimates of
-Wartime Mortality](https://gking.harvard.edu/sibs)
+Wartime Mortality](https://gking.harvard.edu/sibs).
 
 ## Installation
 
-Please install the most recent development version of `trimsib` as
+You can install the most recent development version of `trimsib` as
 follows.
 
 ``` r
@@ -19,16 +19,17 @@ remotes::install_github("mmukaigawara/trimsib", dependencies=TRUE)
 ## Workflows
 
 Consider a dataframe `dat` with sibship-based mortality data. The
-dataframe `dat` has the following variables:
+dataframe `dat` should contain the following variables:
 
-- `Bj`: the number of siblings before war reported by each respondent
-- `Sj`: the number of survivors among `Bj` after war
+- `Bj`: the number of siblings before the war reported by each
+  respondent
+- `Sj`: the number of survivors among `Bj` after the war
 - `Dj`: the number of deaths (`Bj` - `Sj`)
 - `Mj`: sibship-level mortality (`Dj` / `Bj`)
 - `cluster`: cluster ID
 
 The first task is to construct weights (`Wj`), normalized weights
-(`Zj`), and weighted mortality (`Zj`) as follows.
+(`Zj`), and weighted mortality (`Zj`) as follows:
 
 ``` r
 library(ggplot2)
@@ -40,25 +41,27 @@ dat$Zj <- dat$Wj / sum(dat$Wj)
 dat$Vj <- dat$Zj * dat$Mj
 ```
 
-We next examine how trimming affects the prediction errors. To do so, we
-can simply run the `suggest_trim` function and then visualize the
-results using the `plot_highlight` function.
+Next, we examine how trimming affects prediction errors. To do so, we
+can run the `suggest_trim` function and visualize the results using the
+`plot_highlight` function.
 
-The `suggest_trim` function requires `data`, the name of the variable to
-trim (in this case, `Vj`), the name of the variable for cluster IDs
-(`cluster`), and a formula for prediction (by default a quadratic
-function: `x + I(x^2)`).
+The `suggest_trim` function requires:
+
+- `data`: the dataset
+- `vec_var`: the variable to trim (in this case, `Vj`)
+- `cl_var`: the cluster ID variable (here, `cluster`)
+- `formula`: the prediction formula (by default a quadratic function,
+  `x + I(x^2)`)
 
 ``` r
 result <- suggest_trim(data = dat, vec_var = "Vj", 
                        cl_var = "cluster", formula = "x + I(x^2)")
 ```
 
-We then plot the results with some criteria to highlight potentially
-contaminated clusters. The argument `criteria` indicates the maximum
-mean absolute prediction error at the cluster level. With this argument,
-clusters with the maximum mean absolute prediction error greater than
-`criteria` are colored in orange.
+We then plot the results, highlighting clusters that may be
+contaminated. The argument criteria sets the maximum mean absolute
+prediction error at the cluster level. Clusters with a maximum error
+greater than `criteria` are highlighted in orange.
 
 ``` r
 plot_highlight(data_list = result, criteria = 6*10^-6)
@@ -66,18 +69,19 @@ plot_highlight(data_list = result, criteria = 6*10^-6)
 
 <img src="man/figures/README-fig_trim.png" style="width: 50%"/>
 
-The plot suggests that clusters in orange color are suspected of data
-contamination. It also suggests that, for these clusters to exhibit the
-trends in other clusters, we need to trim 20% of observations. With
-this, we proceed to trim 20% of data (total) from each of these
-clusters. We can perform this procedure by running the
-`get_trimmed_data` function by setting `trim_level = 0.2`.
+The plot suggests that clusters highlighted in orange are likely
+contaminated. It also suggests that, for these clusters to exhibit
+trends similar to others, 20% of observations should be trimmed.
+
+We proceed to trim 20% of observations (total, equally from both tails)
+from each of these clusters using the `get_trimmed_data` function with
+`trim_level = 0.2`:
 
 ``` r
 dat_tr <- get_trimmed_data(result_iraq, criteria = 6*10^-6, 
                            trim_level = 0.2, vec_var = "Vj")
 ```
 
-The final output `dat_tr` has trimmed 20% of observations (total, from
-above and below) from each of the clusters with suspected data
+The final output, `dat_tr`, contains data in which 20% of observations
+(total, from both tails) have been trimmed for clusters suspected of
 contamination.
