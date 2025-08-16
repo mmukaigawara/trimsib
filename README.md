@@ -70,7 +70,7 @@ greater than `criteria` are highlighted in orange.
 plot_highlight(data_list = result, criteria = 6*10^-6)
 ```
 
-<img src="man/figures/README-fig_trim.png" style="width: 50%"/>
+<img src="man/figures/README-fig_trim.png" style="width: 70%"/>
 
 The plot suggests that clusters highlighted in orange are likely
 contaminated. It also suggests that, for these clusters to exhibit
@@ -90,13 +90,10 @@ from both tails) have been trimmed for clusters suspected of
 contamination.
 
 Finally, we can compute the G-K mortality estimates using the `get_mort`
-function.  
-For example, to compute the mortality rate of cluster 1,  
-we can use the following code.  
-The parameter `max_Sj` specifies the maximum value of `S_j` to include
-in the estimation  
-(see [Survey Estimates of Wartime
-Mortality](https://gking.harvard.edu/sibs) for details).
+function. For example, to compute the mortality rate of cluster 1, we
+can use the following code. The parameter `max_Sj` specifies the maximum
+value of `S_j` to include in the estimation (see [Survey Estimates of
+Wartime Mortality](https://gking.harvard.edu/sibs) for details).
 
 ``` r
 get_mort(dat_tr |> filter(cluster == 1), 
@@ -104,10 +101,9 @@ get_mort(dat_tr |> filter(cluster == 1),
 ```
 
 The output is a tibble containing the estimated mortality rate along
-with  
-the upper and lower bounds of the 95% confidence interval.  
-In the following example, the mortality rate is 3.03% with a 95% CI of
-\[2.09, 3.98%\].
+with the upper and lower bounds of the 95% confidence interval. In the
+following example, the mortality rate is 3.03% with a 95% CI of \[2.09,
+3.98%\].
 
 ``` r
 # A tibble: 1 × 4
