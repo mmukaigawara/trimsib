@@ -5,12 +5,9 @@
 #'
 #' @param data A data frame.
 #' @param vec_var String. Name of the numeric column to trim (e.g., \code{"Vj"}).
-#' @param formula_rhs String. RHS of a formula in terms of \code{x}
+#' @param formula String. RHS of a formula in terms of \code{x}
 #'   (e.g., \code{"x + I(x^2)"}). The response is internally set to \code{val}.
 #' @param cl_var String. Cluster column name (default \code{"cluster"}).
-#' @param j_grid Numeric vector of candidate trim thresholds \eqn{j}.
-#'   Defaults to \code{seq(0.10, 0.49, by = 0.05)} to ensure \eqn{\ge 3} points
-#'   for quadratic fits.
 #'
 #' @return
 #' \itemize{
@@ -27,44 +24,45 @@
 #' # Example:
 #' # suggest_trim(dat, vec_var = "Vj", cl_var = "cluster", formula_rhs = "x + I(x^2)")
 #'
-#' @importFrom stats lm predict
-#' @importFrom dplyr group_by group_modify rename bind_cols filter %>%
+#' @importFrom dplyr group_by group_modify rename bind_cols filter between %>%
 #' @importFrom rlang .data sym
 #' @importFrom purrr map_dbl
+#' @importFrom stats as.formula lm predict quantile var cov mean
+#' @importFrom tibble tibble
 #' @export
-get_cl_to_trim <- function(data,
-                           vec_var,
-                           formula) {
+get_cl_to_trim <- function(data, vec_var, formula) {
 
   # Identify the vector for trimming
   vec <- data[[vec_var]]
 
-  # Trimmed means
-  vec_trim <- sapply(seq(0, 0.5, by = 0.005), function(x) mean(vec, trim = x, na.rm = TRUE))
-  trimdata <- data.frame(val = vec_trim, x = seq(0, 1, by = 0.01)) # Trimmed data
+  # Trimmed means on 0..0.5 (step 0.005)
+  x_grid  <- seq(0, 0.5, by = 0.005)
+  vec_trim <- vapply(x_grid, function(tt) mean(vec, trim = tt, na.rm = TRUE), numeric(1))
+  trimdata <- data.frame(val = vec_trim, x = x_grid)
 
   # For each j, predict and compare
-  form <- as.formula(paste("val ~", formula))
+  form <- stats::as.formula(paste("val ~", formula))
 
   purrr::map_dbl(seq(0.1, 0.5, by = 0.05), function(j) {
 
-    trimdata_pred <- trimdata |> dplyr::filter(x >= j)
+    trimdata_pred <- trimdata |> dplyr::filter(.data$x >= j)
     x_pred <- rev(j - 0.01 * 2 * (1:5))
 
     model <- stats::lm(form, data = trimdata_pred)
 
     new_preds <- data.frame(
-      x = x_pred,
+      x   = x_pred,
       val = stats::predict(model, newdata = data.frame(x = x_pred))
     )
 
-    res <- dplyr::bind_cols(new_preds, trimdata |> dplyr::filter(round(x, 4) %in% round(x_pred, 4)))
+    res <- dplyr::bind_cols(
+      new_preds,
+      trimdata |> dplyr::filter(round(.data$x, 4) %in% round(x_pred, 4))
+    )
 
-    mean(abs(res[, 2] - res[, 3]))
+    mean(abs(res[[2]] - res[[3]]))
   })
-
 }
-
 #' @rdname get_cl_to_trim
 #' @export
 suggest_trim <- function(data, vec_var = "Vj", cl_var = "cluster", formula = "x + I(x^2)") {

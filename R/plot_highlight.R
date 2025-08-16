@@ -27,18 +27,18 @@ plot_highlight <- function(data_list, criteria) {
   data <- as.data.frame(data_list[[2]]) # Pick dat_st for plot
 
   highlight_clusters <- data |>
-    dplyr::group_by(cluster) |>
-    dplyr::filter(max(abs_error) >= criteria) |>
-    dplyr::pull(cluster) |>
+    dplyr::group_by(.data$cluster) |>
+    dplyr::filter(max(.data$abs_error) >= .data$criteria) |>
+    dplyr::pull(.data$cluster) |>
     unique()
 
   data <- data |>
-    dplyr::mutate(color_group = ifelse(cluster %in% highlight_clusters, "highlight", "normal"))
+    dplyr::mutate(color_group = ifelse(.data$cluster %in% highlight_clusters, "highlight", "normal"))
 
   ggplot() +
     ggplot2::geom_line(data = data, # trim_level = both bottom and above combined (10% = 5% each)
-                       ggplot2::aes(x = trim_level * 100, y = abs_error, group = cluster,
-                                    color = color_group, alpha = color_group)) +
+                       ggplot2::aes(x = .data$trim_level * 100, y = .data$abs_error, group = .data$cluster,
+                                    color = .data$color_group, alpha = .data$color_group)) +
     ggplot2::scale_color_manual(values = c("highlight" = "orange", "normal" = "grey50")) +
     ggplot2::scale_alpha_manual(values = c("highlight" = 1, "normal" = 0.2)) +
     ggplot2::xlim(10, 50) +

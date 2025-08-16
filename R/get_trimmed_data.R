@@ -30,6 +30,7 @@
 #'
 #' @importFrom dplyr group_by summarise filter mutate bind_rows ungroup pull distinct %>%
 #' @importFrom rlang .data sym
+#' @importFrom stats quantile
 #' @export
 
 get_trimmed_data <- function(data_list, criteria, trim_level, vec_var = "Vj") {
@@ -38,18 +39,18 @@ get_trimmed_data <- function(data_list, criteria, trim_level, vec_var = "Vj") {
   dat_original <- as.data.frame(data_list[[1]])
 
   trim_clusters <- data |>
-    dplyr::group_by(cluster) |>
-    dplyr::filter(max(abs_error) >= criteria) |>
-    dplyr::pull(cluster) |>
+    dplyr::group_by(.data$cluster) |>
+    dplyr::filter(max(.data$abs_error) >= criteria) |>
+    dplyr::pull(.data$cluster) |>
     unique()
 
   dat_original <- dat_original |>
-    dplyr::mutate(trim = ifelse(cluster %in% trim_clusters, 1, 0)) # 1 = trim
+    dplyr::mutate(trim = ifelse(.data$cluster %in% trim_clusters, 1, 0)) # 1 = trim
 
   # For clusters with trim == 1, obtain vectors and coresp obs, trim them, and return
   dat_trimmed <- dat_original |>
-    dplyr::filter(trim == 1) |>
-    dplyr::group_by(cluster) |>
+    dplyr::filter(.data$trim == 1) |>
+    dplyr::group_by(.data$cluster) |>
     dplyr::filter(
       dplyr::between(
         .data[[vec_var]],
@@ -58,7 +59,7 @@ get_trimmed_data <- function(data_list, criteria, trim_level, vec_var = "Vj") {
       )
     ) |>
     dplyr::ungroup() |>
-    dplyr::bind_rows(dat_original |> dplyr::filter(trim == 0)) # Merge with original with trim == 0
+    dplyr::bind_rows(dat_original |> dplyr::filter(.data$trim == 0)) # Merge with original with trim == 0
 
 
   return(dat_trimmed)
