@@ -5,14 +5,12 @@
 \alias{suggest_trim}
 \title{Cluster-wise trimming diagnostics and suggested trim levels}
 \usage{
-get_cl_to_trim(data, vec_var, formula)
+get_cl_to_trim(data, formula)
 
-suggest_trim(data, vec_var = "Vj", cl_var = "cluster", formula = "x + I(x^2)")
+suggest_trim(data, cl_var = "cluster", formula = "x + I(x^2)")
 }
 \arguments{
 \item{data}{A data frame.}
-
-\item{vec_var}{String. Name of the numeric column to trim (e.g., \code{"Vj"}).}
 
 \item{formula}{String. RHS of a formula in terms of \code{x}
 (e.g., \code{"x + I(x^2)"}). The response is internally set to \code{val}.}
@@ -35,6 +33,6 @@ A funciton that computes trimmed means
 }
 \examples{
 # Example:
-# suggest_trim(dat, vec_var = "Vj", cl_var = "cluster", formula_rhs = "x + I(x^2)")
+# suggest_trim(dat, cl_var = "cluster", formula_rhs = "x + I(x^2)")
 
 }

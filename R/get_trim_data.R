@@ -2,7 +2,7 @@
 #'
 #' @description
 #' A function that performs within-cluster symmetric trimming on
-#' \code{vec_var} at level \code{trim_level}
+#' at level \code{trim_level}
 #'
 #' @param data_list Either:
 #'   \itemize{
@@ -19,8 +19,6 @@
 #'   rule is used. (Default \code{NULL}.)
 #' @param trim_level Numeric in \eqn{(0, 1)}. Symmetric trim proportion (e.g.,
 #'   \code{0.10} drops 5% in each tail).
-#' @param vec_var String. Name of the numeric column to be trimmed within
-#'   selected clusters (default \code{"Vj"}).
 #'
 #' @return
 #' A data frame identical to the original input data (column-wise), plus a
@@ -33,7 +31,7 @@
 #' @importFrom stats quantile
 #' @export
 
-get_trimmed_data <- function(data_list, criteria, trim_level, vec_var = "Vj") {
+get_trim_data <- function(data_list, criteria, trim_level) {
 
   data <- as.data.frame(data_list[[2]])
   dat_original <- as.data.frame(data_list[[1]])
@@ -53,9 +51,9 @@ get_trimmed_data <- function(data_list, criteria, trim_level, vec_var = "Vj") {
     dplyr::group_by(.data$cluster) |>
     dplyr::filter(
       dplyr::between(
-        .data[[vec_var]],
-        stats::quantile(.data[[vec_var]], probs = trim_level/2, na.rm = TRUE, names = FALSE),
-        stats::quantile(.data[[vec_var]], probs = 1 - trim_level/2, na.rm = TRUE, names = FALSE)
+        .data$Vj,
+        stats::quantile(.data$Vj, probs = trim_level/2, na.rm = TRUE, names = FALSE),
+        stats::quantile(.data$Vj, probs = 1 - trim_level/2, na.rm = TRUE, names = FALSE)
       )
     ) |>
     dplyr::ungroup() |>

@@ -29,36 +29,25 @@ dataframe `dat` should contain the following variables:
 - `cluster`: cluster ID
 
 Please make sure to name the number of siblings, survivors, and deaths
-as `Bj`, `Sj`, and `Dj` in your dataset.
+as well as mortality as `Bj`, `Sj`, `Dj`, and `Mj` in your dataset.
 
-The first task is to construct weights (`Wj`), normalized weights
-(`Zj`), and weighted mortality (`Zj`) as follows:
+First, we examine how trimming affects prediction errors. To do so, we
+can run the `suggest_trim` function and visualize the results using the
+`trimplot` function.
+
+The `suggest_trim` function requires:
+
+- `data`: the dataset
+- `cl_var`: the cluster ID variable (here, `cluster`)
+- `formula`: the prediction formula (by default a quadratic function,
+  `x + I(x^2)`)
 
 ``` r
 library(ggplot2)
 library(dplyr)
 library(trimsib)
 
-dat$Wj <- dat$Bj / dat$Sj
-dat$Zj <- dat$Wj / sum(dat$Wj)
-dat$Vj <- dat$Zj * dat$Mj
-```
-
-Next, we examine how trimming affects prediction errors. To do so, we
-can run the `suggest_trim` function and visualize the results using the
-`plot_highlight` function.
-
-The `suggest_trim` function requires:
-
-- `data`: the dataset
-- `vec_var`: the variable to trim (in this case, `Vj`)
-- `cl_var`: the cluster ID variable (here, `cluster`)
-- `formula`: the prediction formula (by default a quadratic function,
-  `x + I(x^2)`)
-
-``` r
-result <- suggest_trim(data = dat, vec_var = "Vj", 
-                       cl_var = "cluster", formula = "x + I(x^2)")
+result <- suggest_trim(data = dat, cl_var = "cluster", formula = "x + I(x^2)")
 ```
 
 We then plot the results, highlighting clusters that may be
@@ -67,7 +56,7 @@ prediction error at the cluster level. Clusters with a maximum error
 greater than `criteria` are highlighted in orange.
 
 ``` r
-plot_highlight(data_list = result, criteria = 6*10^-6)
+trimplot(data_list = result, criteria = 6*10^-6)
 ```
 
 <img src="man/figures/README-fig_trim.png" style="width: 70%"/>
@@ -77,12 +66,12 @@ contaminated. It also suggests that, for these clusters to exhibit
 trends similar to others, 20% of observations should be trimmed.
 
 We proceed to trim 20% of observations (total, equally from both tails)
-from each of these clusters using the `get_trimmed_data` function with
+from each of these clusters using the `get_trim_data` function with
 `trim_level = 0.2`:
 
 ``` r
-dat_tr <- get_trimmed_data(result_iraq, criteria = 6*10^-6, 
-                           trim_level = 0.2, vec_var = "Vj")
+dat_tr <- get_trim_data(result_iraq, criteria = 6*10^-6, 
+                        trim_level = 0.2)
 ```
 
 The output, `dat_tr`, contains data in which 20% of observations (total,

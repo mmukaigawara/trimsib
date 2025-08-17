@@ -4,7 +4,6 @@
 #' A funciton that computes trimmed means
 #'
 #' @param data A data frame.
-#' @param vec_var String. Name of the numeric column to trim (e.g., \code{"Vj"}).
 #' @param formula String. RHS of a formula in terms of \code{x}
 #'   (e.g., \code{"x + I(x^2)"}). The response is internally set to \code{val}.
 #' @param cl_var String. Cluster column name (default \code{"cluster"}).
@@ -22,7 +21,7 @@
 #'
 #' @examples
 #' # Example:
-#' # suggest_trim(dat, vec_var = "Vj", cl_var = "cluster", formula_rhs = "x + I(x^2)")
+#' # suggest_trim(dat, cl_var = "cluster", formula_rhs = "x + I(x^2)")
 #'
 #' @importFrom dplyr group_by group_modify rename bind_cols filter between %>%
 #' @importFrom rlang .data sym
@@ -30,10 +29,9 @@
 #' @importFrom stats as.formula lm predict quantile var cov mean
 #' @importFrom tibble tibble
 #' @export
-get_cl_to_trim <- function(data, vec_var, formula) {
+get_cl_to_trim <- function(data, formula) {
 
-  # Identify the vector for trimming
-  vec <- data[[vec_var]]
+  vec <- data$Vj
 
   # Trimmed means on 0..0.5 (step 0.005)
   x_grid  <- seq(0, 0.5, by = 0.005)
@@ -65,12 +63,16 @@ get_cl_to_trim <- function(data, vec_var, formula) {
 }
 #' @rdname get_cl_to_trim
 #' @export
-suggest_trim <- function(data, vec_var = "Vj", cl_var = "cluster", formula = "x + I(x^2)") {
+suggest_trim <- function(data, cl_var = "cluster", formula = "x + I(x^2)") {
+
+  data$Wj <- data$Bj / data$Sj
+  data$Zj <- data$Wj / sum(data$Wj)
+  data$Vj <- data$Zj * data$Mj
 
   dat_st <- data |>
     dplyr::group_by(!!rlang::sym(cl_var)) |>
     dplyr::group_modify(~ {
-      errors <- get_cl_to_trim(.x, vec_var, formula)
+      errors <- get_cl_to_trim(.x, formula)
       tibble::tibble(trim_level = seq(0.1, 0.5, by = 0.05), abs_error = errors)
     })
 

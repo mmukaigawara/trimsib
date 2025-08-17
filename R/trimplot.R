@@ -22,13 +22,13 @@
 #' @import ggplot2
 #' @export
 
-plot_highlight <- function(data_list, criteria) {
+trimplot <- function(data_list, criteria) {
 
   data <- as.data.frame(data_list[[2]]) # Pick dat_st for plot
 
   highlight_clusters <- data |>
     dplyr::group_by(.data$cluster) |>
-    dplyr::filter(max(.data$abs_error) >= .data$criteria) |>
+    dplyr::filter(max(.data$abs_error) >= criteria) |>
     dplyr::pull(.data$cluster) |>
     unique()
 

@@ -2,9 +2,9 @@
 
 export(get_cl_to_trim)
 export(get_mort)
-export(get_trimmed_data)
-export(plot_highlight)
+export(get_trim_data)
 export(suggest_trim)
+export(trimplot)
 import(estimatr)
 import(ggplot2)
 importFrom(dplyr,"%>%")
